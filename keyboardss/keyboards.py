@@ -1,11 +1,48 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from database import db
+
 
 def get_main_keyboard():
     keyboard = [
         [KeyboardButton(text="🎯 Оценить преподавателя")],
         [KeyboardButton(text="📊 Посмотреть рейтинги")],
+        [KeyboardButton(text="ℹ️ О боте")],
+        [KeyboardButton(text="📖 Помощь")]
+    ]
+
+    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+def get_tags_keyboard(selected_tags=None):
+    """Клавиатура для выбора тегов (теперь из БД)"""
+    if selected_tags is None:
+        selected_tags = []
+
+    # Получаем теги из базы данных
+    tags_from_db = db.get_all_tags(active_only=True)
+    tags = [tag['name'] for tag in tags_from_db]
+
+    builder = InlineKeyboardBuilder()
+
+    for tag in tags:
+        is_selected = tag in selected_tags
+        emoji = "✅" if is_selected else "⬜"
+        builder.button(text=f"{emoji} {tag}", callback_data=f"tag_{tag}")
+
+    builder.button(text="🚫 Пропустить теги", callback_data="skip_tags")
+    if len(selected_tags) >= 3:
+        builder.button(text="📤 Продолжить", callback_data="finish_tags")
+
+    builder.adjust(2)
+    return builder.as_markup()
+
+def get_admin_main_keyboard():
+    """Расширенная клавиатура для администраторов"""
+    keyboard = [
+        [KeyboardButton(text="🎯 Оценить преподавателя")],
+        [KeyboardButton(text="📊 Посмотреть рейтинги")],
+        [KeyboardButton(text="👨‍💼 Панель администратора")],
         [KeyboardButton(text="ℹ️ О боте")],
         [KeyboardButton(text="📖 Помощь")]
     ]
@@ -75,24 +112,13 @@ def get_question_navigation_keyboard(question_number: int, total_questions: int)
 
 
 def get_tags_keyboard(selected_tags=None):
-    """Клавиатура для выбора тегов"""
+    """Клавиатура для выбора тегов (теперь из БД)"""
     if selected_tags is None:
         selected_tags = []
 
-    tags = [
-        "принципиальный", "высокомерный", "любит глумиться", "торгуется на оценку",
-        "лоялен к девушкам", "добрый", "придирчивый", "щедрый на оценки",
-        "отзывчивый", "взаимодействует онлайн", "гордый", "требовательный",
-        "уважает учащихся", "кричит", "нудный", "грубый", "интересный материал",
-        "хорошее чувство юмора", "бдительный на экзамене", "надменный",
-        "отмечает", "скромный", "неадекватный", "ставит автомат", "строгий",
-        "сложный экзамен", "адекватный", "странный", "входит в положение",
-        "конфликтный", "проверяет лекции", "злопамятный", "разрешает телефоны",
-        "общительный", "хорошие презентации", "эмоциональный", "пропускает занятия",
-        "опытный", "работал по профессии", "мотивирует", "помогает на экзамене",
-        "вежливый", "лояльный", "лоялен к парням", "хороший научный руководитель",
-        "одержим наукой"
-    ]
+    # Получаем теги из базы данных
+    tags_from_db = db.get_all_tags(active_only=True)
+    tags = [tag['name'] for tag in tags_from_db]
 
     builder = InlineKeyboardBuilder()
 
@@ -107,7 +133,6 @@ def get_tags_keyboard(selected_tags=None):
 
     builder.adjust(2)
     return builder.as_markup()
-
 
 def get_comment_keyboard():
     """Клавиатура для комментария"""

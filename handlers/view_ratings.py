@@ -7,6 +7,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from database import db
 from aiogram.enums import ParseMode
 import json
+from handlers.report_handlers import get_report_review_keyboard
+
 
 router = Router()
 
@@ -473,9 +475,10 @@ async def show_review_page(callback: CallbackQuery, teacher, teacher_name: str, 
 
     review_text += f"<i>📅 Опубликовано: {formatted_date}</i>"
 
+    # ИСПРАВЛЕНО: передаем review['id'] вместо teacher['id']
     await callback.message.edit_text(
         review_text,
-        reply_markup=get_teacher_details_keyboard(teacher['id'], page, total_pages),
+        reply_markup=get_report_review_keyboard(review['id']),  # <-- Здесь была ошибка!
         parse_mode=ParseMode.HTML
     )
 

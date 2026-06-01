@@ -1,9 +1,11 @@
+
 from aiogram import Router, F
 from aiogram.enums import ParseMode
 from aiogram.types import Message
 from aiogram.filters import CommandStart, Command
 from database import db
-from keyboardss.keyboards import get_main_keyboard
+from keyboardss.keyboards import get_main_keyboard, get_admin_main_keyboard
+from handlers.admin_handlers import is_admin
 
 router = Router()
 
@@ -16,15 +18,36 @@ async def cmd_start(message: Message):
         full_name=message.from_user.full_name
     )
 
-    await message.answer(
-        "👋 Добро пожаловать в бот для оценки преподавателей Московского политеха!\n\n"
-        "Здесь вы можете:\n"
-        "• Оценить преподавателей по различным критериям\n"
-        "• Оставить отзывы с тегами\n"
-        "• Посмотреть рейтинги других преподавателей\n\n"
-        "Выберите действие в меню ниже:",
-        reply_markup=get_main_keyboard()
-        , parse_mode=ParseMode.HTML)
+    # Проверяем, является ли пользователь администратором
+    if is_admin(message.from_user.id):
+        welcome_text = (
+            "👋 Добро пожаловать в бот для оценки преподавателей Московского политеха!\n\n"
+            "🔰 <b>У вас права администратора</b>\n\n"
+            "Здесь вы можете:\n"
+            "• Оценивать преподавателей по различным критериям\n"
+            "• Оставлять отзывы с тегами\n"
+            "• Посмотреть рейтинги других преподавателей\n"
+            "• Управлять преподавателями (добавлять/редактировать/удалять)\n"
+            "• Модерировать отзывы пользователей\n"
+            "• Просматривать статистику\n\n"
+            "Выберите действие в меню ниже:"
+        )
+        await message.answer(
+            welcome_text,
+            reply_markup=get_admin_main_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+    else:
+        await message.answer(
+            "👋 Добро пожаловать в бот для оценки преподавателей Московского политеха!\n\n"
+            "Здесь вы можете:\n"
+            "• Оценить преподавателей по различным критериям\n"
+            "• Оставить отзывы с тегами\n"
+            "• Посмотреть рейтинги других преподавателей\n\n"
+            "Выберите действие в меню ниже:",
+            reply_markup=get_main_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
 
 
 @router.message(Command("help"))
@@ -44,6 +67,7 @@ async def show_help(message: Message):
 <b>Основные команды:</b>
 /start - Главное меню
 /help - Помощь
+/admin - Панель администратора (только для админов)
 
 <b>Как оценить преподавателя:</b>
 1. Нажмите "🎯 Оценить преподавателя"
@@ -56,6 +80,21 @@ async def show_help(message: Message):
 • Нажмите "📊 Посмотреть рейтинги"
 • Выберите преподавателя для просмотра оценок
     """
+
+    # Добавляем информацию для администраторов
+    if is_admin(message.from_user.id):
+        help_text += """
+
+<b>🔰 Функции администратора:</b>
+• /admin - Вход в панель администратора
+• Добавление новых преподавателей
+• Редактирование данных преподавателей
+• Удаление преподавателей
+• Модерация отзывов пользователей
+• Просмотр статистики
+• Экспорт данных в CSV
+        """
+
     await message.answer(help_text, parse_mode=ParseMode.HTML)
 
 
@@ -79,7 +118,15 @@ async def about_bot(message: Message):
 
 @router.message(F.text == "🔙 Главное меню")
 async def back_to_main(message: Message):
-    await message.answer(
-        "Главное меню:",
-        reply_markup=get_main_keyboard()
-    )
+    # Проверяем, является ли пользователь администратором
+    if is_admin(message.from_user.id):
+        await message.answer(
+            "Главное меню (администратор):",
+            reply_markup=get_admin_main_keyboard()
+        )
+    else:
+        await message.answer(
+            "Главное меню:",
+            reply_markup=get_main_keyboard()
+        )
+
