@@ -195,7 +195,6 @@ class Database:
 
             logger.info("База данных инициализирована")
 
-    # ... (User functions stay the same)
     def add_user(self, id: str, username: str, full_name: str):
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -212,7 +211,6 @@ class Database:
             cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
             return cursor.fetchone()
 
-    # ... (Teacher functions stay the same)
     def add_teacher(self, last_name: str, first_name: str, patronymic: str = None):
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -274,7 +272,6 @@ class Database:
             return ' '.join(parts)
         return None
 
-    # ... (Rating functions modified)
     def has_user_rated_teacher(self, user_id: int, teacher_id: int) -> bool:
         """Проверяет, оставлял ли пользователь отзыв преподавателю"""
         with self.get_connection() as conn:
@@ -326,7 +323,6 @@ class Database:
             ''', (teacher_id,))
             return cursor.fetchone()
 
-    # ... (Report functions)
     def add_report(self, review_id: int, reporter_id: int, reason: str):
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -365,7 +361,6 @@ class Database:
             conn.commit()
             return cursor.rowcount > 0
 
-    # ... (Banned words functions)
     def get_banned_words(self):
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -384,7 +379,6 @@ class Database:
             cursor.execute("DELETE FROM banned_words WHERE word = ?", (word,))
             conn.commit()
 
-    # ... (Moderation Settings)
     def get_setting(self, key: str):
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -398,7 +392,6 @@ class Database:
             cursor.execute("INSERT OR REPLACE INTO moderation_settings (key, value) VALUES (?, ?)", (key, value))
             conn.commit()
 
-    # ... (Statistics - unchanged)
     def get_statistics(self) -> dict:
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -450,7 +443,6 @@ class Database:
                 'top_by_count': top_by_count
             }
 
-    # ... (Export functions)
     def export_users_to_csv(self) -> str:
         with self.get_connection() as conn:
             cursor = conn.cursor()
