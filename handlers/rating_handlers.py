@@ -10,9 +10,6 @@ from aiogram.enums import ParseMode
 
 router = Router()
 
-
-# В начало файла rating_handlers.py добавьте функцию для получения вопросов из БД
-
 def get_questions_from_db():
     """Получает список вопросов из базы данных"""
     questions_db = db.get_all_questions(active_only=True)
@@ -32,7 +29,6 @@ def get_questions_from_db():
     return questions, question_flow
 
 
-# Замените существующие QUESTIONS и QUESTION_FLOW на:
 QUESTIONS, QUESTION_FLOW = get_questions_from_db()
 
 def contains_bad_words(text: str) -> bool:
@@ -280,7 +276,6 @@ async def skip_tags(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-# Модифицировано: проверка на плохие слова
 @router.message(RatingStates.writing_comment)
 async def process_comment(message: Message, state: FSMContext):
     comment = message.text
@@ -344,9 +339,6 @@ async def save_rating(message: Message, state: FSMContext, bot: Bot, comment: st
     await message.answer(result_text, parse_mode=ParseMode.HTML)
     await state.clear()
 
-
-# ... (Остальные функции: paginate_teachers, start_search, cancel_search, process_search, show_all_teachers, search_teachers) без изменений
-# Важно! Добавьте их сюда, так как они используются
 @router.callback_query(F.data.startswith("page_"), RatingStates.choosing_teacher)
 async def paginate_teachers(callback: CallbackQuery, state: FSMContext):
     parts = callback.data.split('_')
